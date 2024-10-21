@@ -1,101 +1,191 @@
-import Image from "next/image";
+'use client'
+
+import { io, socket, Transport } from "../socket"
+import { useState, useEffect, useOptimistic, use } from "react";
+import { AddReaction } from './actions'
+import SendIcon from '@mui/icons-material/Send';
+import { AccountCircle, AddReaction as AddReactionIcon, Flag } from "@mui/icons-material";
+import styles from './homepage.module.css'
+import { JsxElement } from "typescript";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [isConnected, setIsConnected] = useState(socket.connected)
+  const [transport, setTransport] = useState("N/A")
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [isReacting, setIsReacting] = useState(false)
+  const [isFlagging, setIsFlagging] = useState(false)
+  const [user, setUser] = useState<User>({
+    id: 12,
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+    username: "TestUser",
+    email: "t3gQx@example.com",
+  })
+  const [chatMessage, setChatMessage] = useState<ChatMessage>({
+    message: "Test",
+    username: "TestUser",
+    reactions: [],
+    author: user,
+    timestamp: Date.now(),
+  })
+
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect()
+
+      socket.emit("hello", "world")
+    }
+
+    function onConnect(): void {
+      setIsConnected(true)
+      setTransport(socket.io.engine.transport.name)
+
+      socket.io.engine.on("upgrade", (transport: Transport) => {
+        setTransport(transport.name)
+      })
+    }
+
+    function onDisconnect(): void {
+      setIsConnected(false)
+      setTransport("N/A")
+    }
+
+    socket.on("connect", onConnect)
+    socket.on("disconnect", onDisconnect)
+
+    return () => {
+      socket.off("connect", onConnect)
+      socket.off("disconnect", onDisconnect)
+    }
+  }, [])
+
+  function emitMessage(): void {
+    console.log("Emitting")
+    socket.emit('emitMessage', chatMessage)
+  }
+
+
+  const dismissDropdownOnClickOutside = (e: React.MouseEvent<HTMLElement>): void => {
+    let clickedElement: HTMLElement = e.target as HTMLElement
+    let reactionButton: HTMLElement = document.getElementById("react-button") as HTMLElement
+    let reactionMenu: HTMLElement = document.getElementById('reaction-menu') as HTMLElement
+    let flagButton: HTMLElement = document.getElementById("flag-button") as HTMLElement
+    let flagMenu: HTMLElement = document.getElementById('flag-menu') as HTMLElement
+
+    if (!reactionButton.contains(clickedElement) && !reactionMenu.contains(clickedElement)) {
+      setIsReacting(false)
+    }
+
+    if (!flagButton.contains(clickedElement) && !flagMenu.contains(clickedElement)) {
+      setIsFlagging(false)
+    }
+
+  }
+
+  return (
+    <main onClick={dismissDropdownOnClickOutside} className={`flex flex-col mx-36 items-center justify-between mt-24 text-white ${styles['chat-window']}`}>
+      <div id="chatBox" className="chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 rounded-md border-slate-500 flex justify-end flex-col p-2">
+        <div className="chat-box p-2 overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
+          <ChatMessage
+            message="Test"
+            username="TestUser"
+            author={user}
+            reactions={[]}
+            timestamp={Date.now()}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="flex flex-row h-1/6 gap-x-2">
+          <textarea className="chat-input focus:outline-slate-600 focus:outline-2 focus:outline w-full bg-slate-800 resize-none rounded-sm w-11/12 p-2" placeholder="Enter a message" />
+          <button onClick={emitMessage} className="w-1/12 bg-slate-600 rounded-sm"><SendIcon /></button>
+        </div>
+      </div>
+    </main >
   );
+
+
+
+
+  function ChatMessage(props: ChatMessage): JSX.Element {
+
+    const toggleReactionMenu = () => {
+      setIsReacting(isReacting => !isReacting)
+    }
+
+
+    const toggleFlagMenu = () => {
+      setIsFlagging(isFlagging => !isFlagging)
+    }
+
+    return (
+      <div className="chat-message items-center flex flex-row justify-between items-center bg-slate-900 p-2 rounded-lg">
+        <div className="flex flex-row items-center">
+          <span className="flex items-center gap-x-1 bg-slate-600 px-3 py-1 rounded-xl mr-2">
+            <AccountCircle />{props.username}
+          </span>{props.message}
+        </div>
+        <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
+
+          <div className={`chat-action-button-wrapper relative`}>
+            <button id="flag-button" onClick={toggleFlagMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
+              <Flag />
+            </button>
+            <FlagMenu />
+          </div>
+
+          <div className={`chat-action-button-wrapper relative`}>
+            <button id="react-button" onClick={toggleReactionMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
+              <AddReactionIcon />
+            </button>
+            <ReactionMenu />
+          </div>
+
+        </div>
+      </div>
+    )
+  }
+
+  function FlagMenu() {
+    return (
+      <div id="flag-menu" className={`menu rounded-md shadow-lg border border-slate-600 w-16 bg-slate-700 flex flex-col absolute text-white ${styles['chat-flag-action-dropdown']} ${isFlagging ? 'block' : 'hidden'}`}>
+        <ul className="text-xs text-center">
+          <button><li className={styles['chat-action-dropdown-items']}>Report User</li></button>
+        </ul>
+      </div>
+    )
+  }
+
+  function ReactionMenu() {
+    const emojis: string[] = ['😊', '😔', '👍', '❤️', '😠', '👎', '👏']
+
+    return (
+      <div id="reaction-menu" className={`menu rounded-md shadow-lg border border-slate-600 justify-center w-32 py-3 bg-slate-700 flex flex-row absolute text-white ${styles['reactions-dropdown']} ${isReacting ? 'block' : 'hidden'}`}>
+        <ul className="text-xs flex flex-row overflow-hidden">
+          {
+            emojis.map((emoji, index) => (
+              <button key={index} onClick={() => { }}>
+                <li>{emoji}</li>
+              </button>
+            ))
+          }
+        </ul>
+      </div>
+    )
+  }
+}
+
+
+export interface ChatMessage {
+  message: string;
+  username: string;
+  avatarUrl?: string;
+  reactions: string[];
+  author: User;
+  timestamp: number;
+}
+
+export interface User {
+  id: number;
+  avatarUrl: string;
+  username: string;
+  email: string;
 }

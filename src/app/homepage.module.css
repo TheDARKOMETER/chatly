@@ -1,0 +1,25 @@
+.chat-window {
+    height: 42rem;
+}
+
+.chat-flag-action-dropdown {
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, 30%);
+    z-index: 10;
+}
+
+.chat-action-dropdown-items {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
+.reactions-dropdown {
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-80%, 30%);
+    z-index: 10;
+}
