@@ -19,9 +19,14 @@ app.prepare().then(() => {
     io.on("connection", (socket) => {
         console.log("Hello World from Socket.io at ")
 
-        socket.on("emitMessage", (chatMessage) => {
+        socket.on("sendMessage", (chatMessage) => {
             console.log(chatMessage)
+            chatMessages.push(chatMessage)
+            io.emit("receiveMessage", chatMessage)
         })
+
+        
+        
 
     })
 
