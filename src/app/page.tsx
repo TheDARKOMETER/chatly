@@ -1,9 +1,10 @@
 'use client'
 
 import { io, socket, Transport } from "../socket"
-import { useState, useEffect, useOptimistic, useRef } from "react";
+import { useState, useEffect, useOptimistic, useRef, memo, ReactElement } from "react";
 import { AddReaction } from './actions'
 import SendIcon from '@mui/icons-material/Send';
+import { Avatar } from "@mui/material";
 import { AccountCircle, AddReaction as AddReactionIcon, Flag } from "@mui/icons-material";
 import styles from './homepage.module.css'
 import { v4 as uuid } from 'uuid'
@@ -21,12 +22,13 @@ export default function Home() {
     email: "t3gQx@example.com",
   })
 
-  const [chatInput, setChatInput] = useState('')
-  const [chatMessage, setChatMessage] = useState<ChatMessage | null>(null)
+
+  const chatInputRef = useRef<HTMLTextAreaElement>(null)
+  const [currentInputMessage, setCurrentInputMessage] = useState<ChatMessage | null>(null)
 
   const emitMessage = (): void => {
-    setChatMessage({
-      message: chatInput,
+    setCurrentInputMessage({
+      message: chatInputRef.current?.value as string,
       username: user.username,
       reactions: [],
       author: user,
@@ -37,14 +39,15 @@ export default function Home() {
 
 
   useEffect(() => {
-    if (chatMessage) {
-      setChatInput(``)
-      console.log("The chatMessage state has been set", chatMessage)
-      console.log("Chat Input state", chatInput)
-      socket.emit('sendMessage', chatMessage)
-      setChatMessage(null)
+    if (currentInputMessage) {
+      if (chatInputRef.current) {
+        chatInputRef.current.value = ""
+      }
+      console.log("The chatMessage state has been set", currentInputMessage)
+      socket.emit('sendMessage', currentInputMessage)
+      setCurrentInputMessage(null)
     }
-  }, [chatMessage])
+  }, [currentInputMessage])
 
   useEffect(() => {
     if (socket.connected) {
@@ -104,30 +107,20 @@ export default function Home() {
 
 
   return (
-    <main onClick={() => { }} className={`flex flex-col mx-36 items-center justify-between mt-24 text-white ${styles['chat-window']}`}>
+    <main onClick={() => { }} className={` mx-36  mt-24 text-white ${styles['chat-window']}`}>
       <div id="chatBox" className="chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 rounded-md border-slate-500 flex justify-end flex-col p-2">
         <div className="chat-box p-2 overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
-          {messages.map((message: ChatMessage, index: number) => {
-            console.log("mapping")
-            return (<ChatMessage key={index}
-              message={message.message}
-              username={message.username}
-              author={message.author}
-              reactions={message.reactions}
-              timestamp={message.timestamp}
-              uuid={message.uuid}
-            />)
-          }
-          )}
+          <ChatMessageList data={messages} />
         </div>
         <div className="flex flex-row h-1/6 gap-x-2">
-          <textarea onKeyDown={(e) => {
+          <textarea ref={chatInputRef} onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault()
               emitMessage()
             }
           }
-          } onChange={(e) => setChatInput(e.target.value)} value={chatInput} className="chat-input focus:outline-slate-600 focus:outline-2 focus:outline w-full bg-slate-800 resize-none rounded-sm w-11/12 p-2" placeholder="Enter a message" />
+          }
+            className="chat-input focus:outline-slate-600 focus:outline-2 focus:outline w-full bg-slate-800 resize-none rounded-sm w-11/12 p-2" placeholder="Enter a message" />
           <button onClick={emitMessage} className="w-1/12 bg-slate-600 rounded-sm"><SendIcon /></button>
         </div>
       </div>
@@ -135,7 +128,24 @@ export default function Home() {
   );
 
 
-
+  function ChatMessageList({ data }: { data: ChatMessage[] }): JSX.Element {
+    return (
+      <>
+        {messages.map((message: ChatMessage, index: number) => {
+          console.log("mapping")
+          return (<ChatMessage key={index}
+            message={message.message}
+            username={message.username}
+            author={message.author}
+            reactions={message.reactions}
+            timestamp={message.timestamp}
+            uuid={message.uuid}
+          />)
+        }
+        )}
+      </>
+    )
+  }
 
   function ChatMessage(props: ChatMessage): JSX.Element {
     const [isReacting, setIsReacting] = useState(false)
@@ -149,10 +159,6 @@ export default function Home() {
     const toggleFlagMenu = () => {
       setIsFlagging(isFlagging => !isFlagging)
     }
-
-
-
-
 
     const dismissDropdownOnClickOutside = (e: MouseEvent): void => {
       let clickedElement: HTMLElement = e.target as HTMLElement
@@ -175,14 +181,11 @@ export default function Home() {
       return () => document.body.removeEventListener('click', dismissDropdownOnClickOutside)
     })
 
-
-
-
     return (
       <div className="chat-message items-center flex flex-row justify-between items-center bg-slate-900 p-2 rounded-lg">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 bg-slate-600 px-3 py-1 rounded-xl mr-2">
-            <AccountCircle />{props.username}
+            <Avatar className="size-5" alt={props.username} src={props.avatarUrl} />{props.username}
           </span>{props.message}
         </div>
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
@@ -236,9 +239,6 @@ export default function Home() {
   }
 
 }
-
-
-
 
 export interface ChatMessage {
   message: string;
