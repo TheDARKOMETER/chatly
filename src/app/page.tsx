@@ -82,9 +82,6 @@ export default function Home() {
     }
 
     socket.on("connect", onConnect)
-
-
-
     socket.on("disconnect", onDisconnect)
 
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/header";
+import AuthContext from "./authcontext";
 import { ReactElement } from "react";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,13 +36,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex flex-col sm:mx-36 mx-8 antialiased bg-slate-900`}
       >
         <div className="flex flex-col h-screen">
-          <Header />
-          <div className="flex-1 items-center justify-center flex">
-            {children}
-          </div>
+          <AuthContext>
+            <Header />
+            <div className="flex-1 items-center justify-center flex">
+              {children}
+            </div>
+          </AuthContext>
         </div>
-
       </body>
-    </html>
+    </html >
   );
 }
