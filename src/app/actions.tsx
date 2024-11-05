@@ -11,17 +11,23 @@ export const AddReaction = (): void => {
 export const Flag = (): void => {
 }
 
-export const SignUp = async (user: FormData): Promise<void> => {
+export const SignUp = async (user: FormData): Promise<{ success: boolean; message: string }> => {
     //pb.collections.
     "use server"
     console.log(user)
-    const userObj = {
-        "username": user.get("username") as string,
-        "email": user.get("email") as string,
-        "password": user.get("password") as string,
-        "passwordConfirm": user.get("confirm_password") as string
+    try {
+        const userObj = {
+            "username": user.get("username") as string,
+            "email": user.get("email") as string,
+            "password": user.get("password") as string,
+            "passwordConfirm": user.get("confirm_password") as string
+        }
+        const record = await pb.collection('users').create(userObj)
+        return { success: true, message: "You have successfully signed up, please login" }
     }
-    const record = await pb.collection('users').create(userObj)
+    catch (error) {
+        return { success: false, message: `Failed to login ${error}` }
+    }
 }
 
 

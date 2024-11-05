@@ -1,6 +1,6 @@
 'use client'
 
-import React, { ReactElement, useActionState, useEffect, useState } from 'react'
+import React, { FormEvent, ReactElement, useActionState, useEffect, useState } from 'react'
 import styles from './signup.module.css'
 import { SignUp } from '../actions'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -8,7 +8,15 @@ import Link from 'next/link'
 
 export default function page() {
     const [showModal, setShowModal] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
+    const [modalMessage, setModalMessage] = useState('')
     //const {loading, error, data} = useActionState(SignUp)
+
+    const handleSignUp = async (formData: FormData) => {
+        const loginAttempt = await SignUp(formData)
+        setIsSuccess(loginAttempt.success)
+        setModalMessage(loginAttempt.message)
+    }
 
     return (
         <>
@@ -16,7 +24,7 @@ export default function page() {
             <div className={`${styles['signup-container']} relative py-12 text-white my-12 mx-auto border border-slate-500 rounded-md shadow-lg p-2`}>
                 <Link className='absolute top-0 left-0 m-4 flex text-sm items-center' href={"/"}><ArrowBackIcon fontSize='small' /><span className=''>Back</span></Link>
                 <h1 className='text-2xl font-bold'>Sign Up</h1>
-                <form action={SignUp} className='flex flex-col gap-y-4 w-full px-12'>
+                <form action={handleSignUp} className='flex flex-col gap-y-4 w-full px-12'>
                     <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="username" placeholder='Username'></input>
                     <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="email" type='email' placeholder='Email'></input>
                     <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="password" type='password' placeholder='Password'></input>

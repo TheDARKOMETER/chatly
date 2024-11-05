@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/header";
-import { ReactElement, useEffect } from "react";
+import { ReactElement } from "react";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -32,7 +32,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex flex-col mx-36 antialiased bg-slate-900`}
+        className={`${geistSans.variable} ${geistMono.variable} flex flex-col sm:mx-36 mx-8 antialiased bg-slate-900`}
       >
         <div className="flex flex-col h-screen">
           <Header />

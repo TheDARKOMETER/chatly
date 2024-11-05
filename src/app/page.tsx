@@ -58,7 +58,7 @@ export default function Home() {
       setIsConnected(true)
       setTransport(socket.io.engine.transport.name)
 
-      socket.on("receiveMessage", (message: ChatMessage) => {
+      socket.off("receiveMessage").on("receiveMessage", (message: ChatMessage) => {
         console.log("Receiving messages")
         setMessages((messages) => [...messages, message])
       })
@@ -107,7 +107,7 @@ export default function Home() {
 
 
   return (
-    <main onClick={() => { }} className={` mx-36  mt-24 text-white ${styles['chat-window']}`}>
+    <main onClick={() => { }} className={` mt-24 text-white ${styles['chat-window']}`}>
       <div id="chatBox" className="chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 rounded-md border-slate-500 flex justify-end flex-col p-2">
         <div className="chat-box p-2 overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
           <ChatMessageList data={messages} />
