@@ -2,7 +2,8 @@
 
 import React, { FormEvent, ReactElement, useActionState, useEffect, useState } from 'react'
 import styles from './signup.module.css'
-import { SignUp } from '../actions'
+import { useAuth } from '../authcontext'
+import { AuthResponse } from '../types'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Link from 'next/link'
 
@@ -10,14 +11,15 @@ export default function page() {
     const [showModal, setShowModal] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     const [modalMessage, setModalMessage] = useState('')
+    const { signup } = useAuth()
     //const {loading, error, data} = useActionState(SignUp)
 
     const handleSignUp = async (formData: FormData) => {
-        const loginAttempt = await SignUp(formData)
+        const signupAttempt: AuthResponse = await signup(formData)
 
         const configureModal = (): void => {
-            setIsSuccess(loginAttempt.success)
-            setModalMessage(loginAttempt.message)
+            setIsSuccess(signupAttempt.success)
+            setModalMessage(signupAttempt.message)
         }
         configureModal()
         setShowModal(true)
