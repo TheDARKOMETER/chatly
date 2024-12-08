@@ -21,6 +21,21 @@ export default function authcontext(props: { children: React.ReactNode }) {
         console.log(pb.authStore.token);
     }, [pb.authStore])
 
+    useEffect(() => {
+        if (user){
+            console.log(user)
+            getAvatar(user)
+        }
+
+    }, [user])
+
+
+    async function getAvatar(user) {
+        let avatar = await pb.collection('users').getOne(user.id, { $autoCancel: false })
+        console.log(avatar)    
+        return avatar
+    }
+
 
     async function login(input: FormData): Promise<AuthResponse> {
         try {
@@ -61,12 +76,28 @@ export default function authcontext(props: { children: React.ReactNode }) {
         }
     }
 
+    async function logout(): Promise<AuthResponse> {
+        try {
+            await pb.authStore.clear()
+            setUser(null)
+            return { success: true, message: "You have successfully logged out" }
+        }
+        catch (error: unknown) {
+            const validationError = error as ValidationErrors
+            let errorMessage = 'Error logging out'
+            if (Object.values(validationError.response.data)[0].message) {
+                errorMessage = Object.values(validationError.response.data)[0].message
+            }
+            return { success: false, message: `${errorMessage}` }
+        }
+    }
 
     const values = {
         pb,
         login,
         signup,
-        user
+        user,
+        logout
     }
 
 

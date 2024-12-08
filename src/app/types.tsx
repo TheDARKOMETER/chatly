@@ -10,6 +10,7 @@ export interface AuthContextType {
     login: (user: FormData) => Promise<AuthResponse>;
     signup: (user: FormData) => Promise<AuthResponse>;
     user: AuthModel | null;
+    logout: () => Promise<AuthResponse>;
 }
 
 export interface ValidationErrors {

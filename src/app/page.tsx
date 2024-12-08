@@ -8,6 +8,7 @@ import { Avatar } from "@mui/material";
 import { AccountCircle, AddReaction as AddReactionIcon, Flag } from "@mui/icons-material";
 import styles from './homepage.module.css'
 import { v4 as uuid } from 'uuid'
+import { useAuth } from "./authcontext";
 import { JsxElement } from "typescript";
 
 export default function Home() {
@@ -15,9 +16,11 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(socket.connected)
   const [transport, setTransport] = useState("N/A")
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [user, setUser] = useState<User>({
+  const authContext = useAuth()
+  const { user } = authContext
+  const [author, setAuthor] = useState<User>({
     id: '',
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+    avatarUrl: "",
     username: "",
     email: "t3gQx@example.com",
   })
@@ -29,7 +32,7 @@ export default function Home() {
   const emitMessage = (): void => {
     setCurrentInputMessage({
       message: chatInputRef.current?.value as string,
-      username: user.username,
+      username: author.username,
       reactions: [],
       author: user,
       timestamp: Date.now(),
@@ -49,6 +52,7 @@ export default function Home() {
     }
   }, [currentInputMessage])
 
+
   useEffect(() => {
     if (socket.connected) {
       onConnect()
@@ -67,13 +71,23 @@ export default function Home() {
         setTransport(transport.name)
       })
 
-      // Set user as the client socket id
-      setUser({
-        id: socket.id as string,
-        avatarUrl: user.avatarUrl,
-        username: socket.id as string,
-        email: user.email,
-      })
+      // Set user as the client socket id as guest
+      if (!user) {
+        setAuthor({
+          id: socket.id as string,
+          avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+          username: socket.id as string,
+          email: socket.id as string,
+        })
+      } else {
+        setAuthor({
+          id: user.id as string,
+          avatarUrl: user.avatar,
+          username: user.username as string,
+          email: user.email,
+        })
+      }
+
     }
 
     function onDisconnect(): void {
@@ -181,8 +195,8 @@ export default function Home() {
     return (
       <div className="chat-message items-center flex flex-row justify-between items-center bg-slate-900 p-2 rounded-lg">
         <div className="flex flex-row items-center">
-          <span className="flex items-center gap-x-1 bg-slate-600 px-3 py-1 rounded-xl mr-2">
-            <Avatar className="size-5" alt={props.username} src={props.avatarUrl} />{props.username}
+          <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
+            <Avatar className="size-6" alt={props.username} src={props.avatarUrl} />{props.username}
           </span>{props.message}
         </div>
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
