@@ -11,37 +11,40 @@ export default function page() {
     const [showModal, setShowModal] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     const [modalMessage, setModalMessage] = useState('')
-    const { signup } = useAuth()
-    //const {loading, error, data} = useActionState(SignUp)
+    const authContext = useAuth()
 
-    const handleSignUp = async (formData: FormData) => {
-        const signupAttempt: AuthResponse = await signup(formData)
-
-        const configureModal = (): void => {
-            setIsSuccess(signupAttempt.success)
-            setModalMessage(signupAttempt.message)
+    if (authContext) {
+        const { signup } = authContext
+        const handleSignUp = async (formData: FormData) => {
+            const signupAttempt: AuthResponse = await signup(formData)
+    
+            const configureModal = (): void => {
+                setIsSuccess(signupAttempt.success)
+                setModalMessage(signupAttempt.message)
+            }
+            configureModal()
+            setShowModal(true)
         }
-        configureModal()
-        setShowModal(true)
+
+        return (
+            <>
+                {showModal && <SignUpModal message={modalMessage} isSuccess={isSuccess} toggleModal={setShowModal} />}
+                <div className={`${styles['signup-container']} relative py-12 text-white my-12 mx-auto border border-slate-500 rounded-md shadow-lg p-2`}>
+                    <Link className='absolute top-0 left-0 m-4 flex text-sm items-center' href={"/"}><ArrowBackIcon fontSize='small' /><span className=''>Back</span></Link>
+                    <h1 className='text-2xl font-bold'>Sign Up</h1>
+                    <form action={handleSignUp} className='flex flex-col gap-y-4 w-full px-12'>
+                        <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="username" placeholder='Username'></input>
+                        <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="email" type='email' placeholder='Email'></input>
+                        <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="password" type='password' placeholder='Password'></input>
+                        <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="confirm_password" type='password' placeholder='Confirm Password'></input>
+                        <button type='submit' className={`border border-slate-500 px-4 mt-4 self-center rounded hover:bg-slate-200 transition-colors hover:text-black`}>Sign Up</button>
+                    </form>
+                </div >
+            </>
+        )
     }
 
-    return (
-        <>
-            {showModal && <SignUpModal message={modalMessage} isSuccess={isSuccess} toggleModal={setShowModal} />}
-            <div className={`${styles['signup-container']} relative py-12 text-white my-12 mx-auto border border-slate-500 rounded-md shadow-lg p-2`}>
-                <Link className='absolute top-0 left-0 m-4 flex text-sm items-center' href={"/"}><ArrowBackIcon fontSize='small' /><span className=''>Back</span></Link>
-                <h1 className='text-2xl font-bold'>Sign Up</h1>
-                <form action={handleSignUp} className='flex flex-col gap-y-4 w-full px-12'>
-                    <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="username" placeholder='Username'></input>
-                    <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="email" type='email' placeholder='Email'></input>
-                    <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="password" type='password' placeholder='Password'></input>
-                    <input className={`border border-slate-500 bg-slate-800 p-1 rounded`} name="confirm_password" type='password' placeholder='Confirm Password'></input>
-                    <button type='submit' className={`border border-slate-500 px-4 mt-4 self-center rounded hover:bg-slate-200 transition-colors hover:text-black`}>Sign Up</button>
-                </form>
-            </div >
-        </>
 
-    )
 }
 
 function SignUpModal(props: { message: string; isSuccess: boolean; toggleModal: React.Dispatch<React.SetStateAction<boolean>> }): ReactElement {

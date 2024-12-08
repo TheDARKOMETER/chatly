@@ -35,3 +35,25 @@ export default function page() {
         </div>
     )
 }
+
+function LoginModal(props: { message: string; isSuccess: boolean; toggleModal: React.Dispatch<React.SetStateAction<boolean>> }): ReactElement {
+    return (
+        <div id="modal-blur-background" className='fixed top-0 left-0 z-10 h-screen w-screen bg-gray/50 backdrop-blur-sm flex justify-center items-center'>
+            <div className='bg-slate-900 justify-between p-4 flex flex-col text-white border border-slate-500 rounded-md w-1/3 h-32'>
+                <p>{props.message}</p>
+                <div className='justify-end self-end  flex flex-row w-full gap-x-3'>
+                    {props.isSuccess && (
+                        <>
+                            <Link href={"/"} className='text-center border border-slate-500 w-2/12 rounded'>Home</Link>
+                        </>
+                    )}
+                    {
+                        !props.isSuccess && (
+                            <button onClick={() => props.toggleModal(false)} className='text-center border border-slate-500 w-2/12 rounded'>Try again</button>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    )
+}

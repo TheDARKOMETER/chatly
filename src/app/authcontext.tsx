@@ -1,13 +1,9 @@
 'use client'
 import React, { createContext, SetStateAction, useEffect, useState } from 'react'
-import { AuthResponse, ValidationErrors } from './types.tsx'
-import PocketBase, { AuthModel, BaseAuthStore } from "pocketbase"
-const AuthContext = createContext({  
-    pb: new PocketBase("http://127.0.0.1:8090"),
-    login: async (user: FormData): Promise<AuthResponse> => {return {success: false, message: ""}},
-    signup: async (user: FormData): Promise<AuthResponse> => {return {success: false, message: ""}},
-    user: BaseAuthStore
-})
+import { AuthResponse, ValidationErrors, AuthContextType } from './types.tsx'
+import PocketBase, { AuthModel } from "pocketbase"
+import Client from 'pocketbase'
+const AuthContext = createContext<AuthContextType | null>(null)
 
 export function useAuth() {
     return React.useContext(AuthContext)
@@ -16,7 +12,7 @@ export function useAuth() {
 export default function authcontext(props: { children: React.ReactNode }) {
 
 
-    const pb = new PocketBase("http://127.0.0.1:8090")
+    const pb: Client = new PocketBase("http://127.0.0.1:8090")
     const [user, setUser]: [ AuthModel | null, React.Dispatch<SetStateAction<AuthModel | null>>] = useState(pb.authStore.model)
 
     useEffect(() => {
@@ -26,9 +22,9 @@ export default function authcontext(props: { children: React.ReactNode }) {
     }, [pb.authStore])
 
 
-    async function login(user: FormData): Promise<AuthResponse> {
+    async function login(input: FormData): Promise<AuthResponse> {
         try {
-            const authData = await pb.collection('users').authWithPassword(user.get("email") as string, user.get("password") as string)
+            const authData = await pb.collection('users').authWithPassword(input.get("username") as string, input.get("password") as string)
             console.log(authData)
             setUser(pb.authStore.model)
             return { success: true, message: "You have successfully logged in" }
@@ -39,17 +35,18 @@ export default function authcontext(props: { children: React.ReactNode }) {
             if (Object.values(validationError.response.data)[0].message) {
                 errorMessage = Object.values(validationError.response.data)[0].message
             }
+            console.log(errorMessage)
             return { success: false, message: `${errorMessage}` }
         }
     }
 
-    async function signup(user: FormData): Promise<AuthResponse> {
+    async function signup(input: FormData): Promise<AuthResponse> {
         try {
             const userObj = {
-                "username": user.get("username") as string,
-                "email": user.get("email") as string,
-                "password": user.get("password") as string,
-                "passwordConfirm": user.get("confirm_password") as string
+                "username": input.get("username") as string,
+                "email": input.get("email") as string,
+                "password": input.get("password") as string,
+                "passwordConfirm": input.get("confirm_password") as string
             }
             const record = await pb.collection('users').create(userObj)
             return { success: true, message: "You have successfully signed up, please login" }
