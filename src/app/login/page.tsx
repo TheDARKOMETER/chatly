@@ -48,12 +48,12 @@ function LoginModal(props: { message: string; isSuccess: boolean; toggleModal: R
                 <div className='justify-end self-end  flex flex-row w-full gap-x-3'>
                     {props.isSuccess && (
                         <>
-                            <Link href={"/"} className='text-center border border-slate-500 w-2/12 rounded'>Home</Link>
+                            <Link href={"/"} className='text-center border border-slate-500 w-20 rounded'>Home</Link>
                         </>
                     )}
                     {
                         !props.isSuccess && (
-                            <button onClick={() => props.toggleModal(false)} className='text-center border border-slate-500 w-2/12 rounded'>Try again</button>
+                            <button onClick={() => props.toggleModal(false)} className='text-center border border-slate-500 w-20 rounded'>Try again</button>
                         )
                     }
                 </div>
