@@ -24,17 +24,9 @@ export default function authcontext(props: { children: React.ReactNode }) {
     useEffect(() => {
         if (user){
             console.log(user)
-            getAvatar(user)
         }
 
     }, [user])
-
-
-    async function getAvatar(user) {
-        let avatar = await pb.collection('users').getOne(user.id, { $autoCancel: false })
-        console.log(avatar)    
-        return avatar
-    }
 
 
     async function login(input: FormData): Promise<AuthResponse> {

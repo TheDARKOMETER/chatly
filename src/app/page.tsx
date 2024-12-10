@@ -142,7 +142,7 @@ export default function Home() {
   function ChatMessageList({ data }: { data: ChatMessage[] }): JSX.Element {
     return (
       <>
-        {messages.map((message: ChatMessage, index: number) => {
+        {data.map((message: ChatMessage, index: number) => {
           console.log("mapping")
           return (<ChatMessage key={index}
             message={message.message}
@@ -161,30 +161,36 @@ export default function Home() {
   function ChatMessage(props: ChatMessage): JSX.Element {
     const [isReacting, setIsReacting] = useState(false)
     const [isFlagging, setIsFlagging] = useState(false)
-
+    const reactionButton = useRef<HTMLButtonElement>(null)
+    const reactionMenu = useRef<HTMLDivElement>(null)
+    const flagButton = useRef<HTMLButtonElement>(null)
+    const flagMenu = useRef<HTMLDivElement>(null)
     const toggleReactionMenu = () => {
+      console.log("toggling reaction menu", isReacting)
       setIsReacting(isReacting => !isReacting)
     }
 
 
     const toggleFlagMenu = () => {
+      console.log("toggling flag menu", isFlagging)
       setIsFlagging(isFlagging => !isFlagging)
     }
 
     const dismissDropdownOnClickOutside = (e: MouseEvent): void => {
       let clickedElement: HTMLElement = e.target as HTMLElement
-      let reactionButton: HTMLElement | null = document.getElementById("react-button") as HTMLElement
-      let reactionMenu: HTMLElement | null = document.getElementById('reaction-menu') as HTMLElement
-      let flagButton: HTMLElement | null = document.getElementById("flag-button") as HTMLElement
-      let flagMenu: HTMLElement | null = document.getElementById('flag-menu') as HTMLElement
+      if (!clickedElement) return
 
-      if (reactionButton && reactionMenu && !reactionButton?.contains(clickedElement) && !reactionMenu.contains(clickedElement)) {
-        setIsReacting(false)
+
+      if (reactionButton.current && reactionMenu.current && flagButton.current && flagMenu.current) {
+        if (!reactionButton.current.contains(clickedElement) && !reactionMenu.current.contains(clickedElement) && isReacting) {
+          setIsReacting(false)
+        }
+
+        if (!flagButton?.current.contains(clickedElement) && !flagMenu?.current.contains(clickedElement) && isFlagging) {
+          setIsFlagging(false)
+        }
       }
 
-      if (reactionButton && reactionMenu && !flagButton?.contains(clickedElement) && !flagMenu.contains(clickedElement)) {
-        setIsFlagging(false)
-      }
     }
 
     useEffect(() => {
@@ -193,7 +199,7 @@ export default function Home() {
     })
 
     return (
-      <div className="chat-message items-center flex flex-row justify-between items-center bg-slate-900 p-2 rounded-lg">
+      <div className="chat-message items-center flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
             <Avatar className="size-6" alt={props.username} src={props.avatarUrl} />{props.username}
@@ -202,14 +208,14 @@ export default function Home() {
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
 
           <div className={`chat-action-button-wrapper relative`}>
-            <button id="flag-button" onClick={toggleFlagMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
+            <button  ref={flagButton}  id="flag-button" onClick={toggleFlagMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
               <Flag />
             </button>
             <FlagMenu />
           </div>
 
           <div className={`chat-action-button-wrapper relative`}>
-            <button id="react-button" onClick={toggleReactionMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
+            <button ref={reactionButton} id="react-button" onClick={toggleReactionMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
               <AddReactionIcon />
             </button>
             <ReactionMenu />
@@ -219,10 +225,9 @@ export default function Home() {
       </div>
     )
 
-
     function FlagMenu() {
       return (
-        <div id="flag-menu" className={`${styles['dropdown-menu']} w-20 flex flex-col absolute text-white ${styles['chat-flag-action-dropdown']} ${isFlagging ? 'block' : 'hidden'}`}>
+        <div ref={flagMenu} id="flag-menu" className={`${styles['dropdown-menu']} w-20 flex flex-col absolute text-white ${styles['chat-flag-action-dropdown']} ${isFlagging ? 'block' : 'hidden'}`}>
           <ul className="text-xs text-center">
             <button><li className={``}>Report User</li></button>
           </ul>
@@ -234,8 +239,8 @@ export default function Home() {
       const emojis: string[] = ['😊', '😔', '👍', '❤️', '😠', '👎', '👏']
 
       return (
-        <div id="reaction-menu" className={`${styles['dropdown-menu']} justify-center w-32 flex flex-row absolute text-white ${styles['chat-reactions-dropdown-items']} ${isReacting ? 'block' : 'hidden'}`}>
-          <ul className="text-xs flex flex-row overflow-hidden">
+        <div ref={reactionMenu} id="reaction-menu" className={`${styles['dropdown-menu']} justify-center  flex flex-row absolute text-white ${styles['chat-reactions-dropdown-items']} ${isReacting ? 'block' : 'hidden'}`}>
+          <ul className="text-md flex flex-row overflow-hidden">
             {
               emojis.map((emoji, index) => (
                 <button key={index} onClick={() => { }}>
