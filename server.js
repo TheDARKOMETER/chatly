@@ -2,13 +2,12 @@ import { createServer } from "http";
 import { parse } from 'url'
 import next from 'next'
 import { Server } from 'socket.io'
-import { create } from "domain";
 
 const port = parseInt(process.env.PORT || '3012', 10)
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
-let chatMessages = []
+let chatMessagesHistory = []
 
 app.prepare().then(() => {
 
@@ -17,17 +16,20 @@ app.prepare().then(() => {
 
 
     io.on("connection", (socket) => {
+
         console.log("Hello World from Socket.io at ")
+        console.log(chatMessagesHistory)
+
+        socket.on('clientConnected', () => {
+            socket.emit('sendChatMessagesHistory', chatMessagesHistory)
+        })
 
         socket.on("sendMessage", (chatMessage) => {
             console.log(chatMessage)
-            chatMessages.push(chatMessage)
+            chatMessagesHistory.push(chatMessage)
             io.emit("receiveMessage", chatMessage)
+            console.log(chatMessagesHistory)
         })
-
-        
-        
-
     })
 
 

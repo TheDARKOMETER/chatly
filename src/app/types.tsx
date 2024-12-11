@@ -17,4 +17,21 @@ export interface ValidationErrors {
     [key: string]: ValidationError
 }
 
+export interface User {
+    id: string;
+    avatarUrl: string;
+    username: string;
+    email: string;
+  }
+
+export interface ChatMessage {
+    message: string;
+    username: string;
+    avatarUrl?: string;
+    reactions: string[];
+    author: User;
+    timestamp: number;
+    uuid: string;
+  }
+
 export interface AuthResponse { success: boolean; message: string }

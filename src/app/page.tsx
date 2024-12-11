@@ -10,6 +10,7 @@ import styles from './homepage.module.css'
 import { v4 as uuid } from 'uuid'
 import { useAuth } from "./authcontext";
 import { JsxElement } from "typescript";
+import { ChatMessage, User } from "@/app/types"
 
 export default function Home() {
 
@@ -18,6 +19,7 @@ export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const authContext = useAuth()
   const { user } = authContext
+  const endOfChatRef = useRef<HTMLDivElement>(null)
   const [author, setAuthor] = useState<User>({
     id: '',
     avatarUrl: "",
@@ -61,6 +63,13 @@ export default function Home() {
     function onConnect(): void {
       setIsConnected(true)
       setTransport(socket.io.engine.transport.name)
+    
+      socket.emit("clientConnected")
+
+      socket.on('sendChatMessagesHistory', (chatMessagesHistory: ChatMessage[]) => {
+        console.log(chatMessagesHistory)
+        setMessages((messages) => [...messages, ...chatMessagesHistory])
+      })
 
       socket.off("receiveMessage").on("receiveMessage", (message: ChatMessage) => {
         console.log("Receiving messages")
@@ -111,17 +120,17 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    console.log(messages)
+    if (endOfChatRef) {
+      endOfChatRef.current.scrollIntoView({ behavior: "smooth", block: 'nearest' })
+    }
   }, [messages])
 
-
-
-
   return (
-    <main onClick={() => { }} className={` mt-24 text-white ${styles['chat-window']}`}>
-      <div id="chatBox" className="chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 rounded-md border-slate-500 flex justify-end flex-col p-2">
-        <div className="chat-box p-2 overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
+    <main  className={`mt-8 text-white ${styles['chat-window']}`}>
+      <div id="chatBox" className="chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 border-slate-500 flex justify-end flex-col p-2">
+        <div className="chat-box overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
           <ChatMessageList data={messages} />
+          <div ref={endOfChatRef} id="end-of-chat"/>
         </div>
         <div className="flex flex-row h-1/6 gap-x-2">
           <textarea ref={chatInputRef} onKeyDown={(e) => {
@@ -131,8 +140,8 @@ export default function Home() {
             }
           }
           }
-            className="chat-input focus:outline-slate-600 focus:outline-2 focus:outline w-full bg-slate-800 resize-none rounded-sm w-11/12 p-2" placeholder="Enter a message" />
-          <button onClick={emitMessage} className="w-1/12 bg-slate-600 rounded-sm"><SendIcon /></button>
+            className="chat-input focus:outline-slate-600 focus:outline-2 focus:outline bg-slate-800 resize-none rounded-sm lg:w-11/12 w-4/5 p-2" placeholder="Enter a message" />
+          <button onClick={emitMessage} className="lg:w-1/12 w-1/5 bg-slate-600 rounded-sm"><SendIcon /></button>
         </div>
       </div>
     </main >
@@ -140,6 +149,7 @@ export default function Home() {
 
 
   function ChatMessageList({ data }: { data: ChatMessage[] }): JSX.Element {
+
     return (
       <>
         {data.map((message: ChatMessage, index: number) => {
@@ -199,7 +209,7 @@ export default function Home() {
     })
 
     return (
-      <div className="chat-message items-center flex flex-row justify-between items-center bg-slate-900 p-2">
+      <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
             <Avatar className="size-6" alt={props.username} src={props.avatarUrl} />{props.username}
@@ -256,19 +266,5 @@ export default function Home() {
 
 }
 
-export interface ChatMessage {
-  message: string;
-  username: string;
-  avatarUrl?: string;
-  reactions: string[];
-  author: User;
-  timestamp: number;
-  uuid: string;
-}
 
-export interface User {
-  id: string;
-  avatarUrl: string;
-  username: string;
-  email: string;
-}
+
