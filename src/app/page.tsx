@@ -20,6 +20,7 @@ export default function Home() {
   const authContext = useAuth()
   const { user } = authContext
   const endOfChatRef = useRef<HTMLDivElement>(null)
+  const chatboxRef = useRef<HTMLDivElement>(null)
   const [author, setAuthor] = useState<User>({
     id: '',
     avatarUrl: "",
@@ -111,6 +112,8 @@ export default function Home() {
     return () => {
       socket.off("connect", onConnect)
       socket.off("disconnect", onDisconnect)
+      socket.off("receiveMessage", onReceiveMessage);
+
       document.removeEventListener('keydown', (e: KeyboardEvent) => {
         if (e.key === "Enter") {
           emitMessage()
@@ -120,17 +123,37 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+
     if (endOfChatRef) {
-      endOfChatRef.current.scrollIntoView({ behavior: "smooth", block: 'nearest' })
+      endOfChatRef?.current.scrollIntoView({ behavior: "smooth", block: 'nearest' })
     }
   }, [messages])
 
+  const ChatMessageList = memo(({ data }: { data: ChatMessage[] }): JSX.Element => {
+    return (
+      <>
+        {data.map((message: ChatMessage, index: number) => {
+          console.log("mapping")
+          return (<ChatMessage key={message.uuid}
+            message={message.message}
+            username={message.username}
+            author={message.author}
+            reactions={message.reactions}
+            timestamp={message.timestamp}
+            uuid={message.uuid}
+          />)
+        }
+        )}
+      </>
+    )
+  })
+
   return (
     <main  className={`mt-8 text-white ${styles['chat-window']}`}>
-      <div id="chatBox" className="chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 border-slate-500 flex justify-end flex-col p-2">
+      <div id="chatBox" className="relative chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 border-slate-500 flex justify-end flex-col p-2">
         <div className="chat-box overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
           <ChatMessageList data={messages} />
-          <div ref={endOfChatRef} id="end-of-chat"/>
+            <div ref={endOfChatRef} className="relative" id="end-of-chat"/>
         </div>
         <div className="flex flex-row h-1/6 gap-x-2">
           <textarea ref={chatInputRef} onKeyDown={(e) => {
@@ -148,25 +171,7 @@ export default function Home() {
   );
 
 
-  function ChatMessageList({ data }: { data: ChatMessage[] }): JSX.Element {
-
-    return (
-      <>
-        {data.map((message: ChatMessage, index: number) => {
-          console.log("mapping")
-          return (<ChatMessage key={index}
-            message={message.message}
-            username={message.username}
-            author={message.author}
-            reactions={message.reactions}
-            timestamp={message.timestamp}
-            uuid={message.uuid}
-          />)
-        }
-        )}
-      </>
-    )
-  }
+ 
 
   function ChatMessage(props: ChatMessage): JSX.Element {
     const [isReacting, setIsReacting] = useState(false)
@@ -182,7 +187,6 @@ export default function Home() {
 
 
     const toggleFlagMenu = () => {
-      console.log("toggling flag menu", isFlagging)
       setIsFlagging(isFlagging => !isFlagging)
     }
 
@@ -237,7 +241,7 @@ export default function Home() {
 
     function FlagMenu() {
       return (
-        <div ref={flagMenu} id="flag-menu" className={`${styles['dropdown-menu']} w-20 flex flex-col absolute text-white ${styles['chat-flag-action-dropdown']} ${isFlagging ? 'block' : 'hidden'}`}>
+        <div ref={flagMenu} id="flag-menu" className={`overflow-hidden ${styles['dropdown-menu']} w-20 flex flex-col absolute text-white ${styles['chat-flag-action-dropdown']} ${isFlagging ? 'block' : 'hidden'}`}>
           <ul className="text-xs text-center">
             <button><li className={``}>Report User</li></button>
           </ul>
