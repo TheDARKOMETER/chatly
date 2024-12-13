@@ -61,21 +61,24 @@ export default function Home() {
       onConnect()
     }
 
+    function onReceiveMessage(message: ChatMessage): void {
+      setMessages((messages) => [...messages, message])
+    }
+
+
     function onConnect(): void {
       setIsConnected(true)
       setTransport(socket.io.engine.transport.name)
-    
+
       socket.emit("clientConnected")
 
-      socket.on('sendChatMessagesHistory', (chatMessagesHistory: ChatMessage[]) => {
+
+      socket.once('sendChatMessagesHistory', (chatMessagesHistory: ChatMessage[]) => {
         console.log(chatMessagesHistory)
         setMessages((messages) => [...messages, ...chatMessagesHistory])
       })
 
-      socket.off("receiveMessage").on("receiveMessage", (message: ChatMessage) => {
-        console.log("Receiving messages")
-        setMessages((messages) => [...messages, message])
-      })
+      socket.off("receiveMessage").on("receiveMessage", onReceiveMessage)
 
       socket.io.engine.on("upgrade", (transport: Transport) => {
         setTransport(transport.name)
@@ -105,6 +108,7 @@ export default function Home() {
       setTransport("N/A")
     }
 
+
     socket.on("connect", onConnect)
     socket.on("disconnect", onDisconnect)
 
@@ -123,17 +127,17 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-
-    if (endOfChatRef) {
-      endOfChatRef?.current.scrollIntoView({ behavior: "smooth", block: 'nearest' })
+    if (endOfChatRef.current) {
+      endOfChatRef.current.scrollIntoView({ behavior: "smooth", block: 'nearest' })
     }
   }, [messages])
 
   const ChatMessageList = memo(({ data }: { data: ChatMessage[] }): JSX.Element => {
     return (
-      <>
+      <div className="overflow-clip z-50">
         {data.map((message: ChatMessage, index: number) => {
-          console.log("mapping")
+          let isLastItem = index + 1 === data.length
+
           return (<ChatMessage key={message.uuid}
             message={message.message}
             username={message.username}
@@ -141,19 +145,20 @@ export default function Home() {
             reactions={message.reactions}
             timestamp={message.timestamp}
             uuid={message.uuid}
+            isLastItem={isLastItem}
           />)
         }
         )}
-      </>
+      </div>
     )
   })
 
   return (
-    <main  className={`mt-8 text-white ${styles['chat-window']}`}>
-      <div id="chatBox" className="relative chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 border-slate-500 flex justify-end flex-col p-2">
+    <main className={`mt-8 text-white ${styles['chat-window']}`}>
+      <div id="chatBox" className="overflow-visible chat-box-container w-full h-5/6 rounded-md shadow-lg border gap-y-2 border-slate-500 flex justify-end flex-col p-2">
         <div className="chat-box overflow-y-auto flex flex-col w-full h-full bg-slate-800 resize-none rounded-sm" >
           <ChatMessageList data={messages} />
-            <div ref={endOfChatRef} className="relative" id="end-of-chat"/>
+          <div ref={endOfChatRef} className="relative" id="end-of-chat" />
         </div>
         <div className="flex flex-row h-1/6 gap-x-2">
           <textarea ref={chatInputRef} onKeyDown={(e) => {
@@ -171,9 +176,9 @@ export default function Home() {
   );
 
 
- 
 
-  function ChatMessage(props: ChatMessage): JSX.Element {
+
+  function ChatMessage(props: ChatMessage & { isLastItem: boolean }): JSX.Element {
     const [isReacting, setIsReacting] = useState(false)
     const [isFlagging, setIsFlagging] = useState(false)
     const reactionButton = useRef<HTMLButtonElement>(null)
@@ -222,26 +227,26 @@ export default function Home() {
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
 
           <div className={`chat-action-button-wrapper relative`}>
-            <button  ref={flagButton}  id="flag-button" onClick={toggleFlagMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
+            <button ref={flagButton} id="flag-button" onClick={toggleFlagMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
               <Flag />
             </button>
-            <FlagMenu />
+            <FlagMenu isLastItem={props.isLastItem} />
           </div>
 
           <div className={`chat-action-button-wrapper relative`}>
             <button ref={reactionButton} id="react-button" onClick={toggleReactionMenu} className="focus:outline-slate-400 focus:outline outline-1 rounded-lg relative">
               <AddReactionIcon />
             </button>
-            <ReactionMenu />
+            <ReactionMenu isLastItem={props.isLastItem} />
           </div>
 
         </div>
       </div>
     )
 
-    function FlagMenu() {
+    function FlagMenu(props: { isLastItem: boolean }) {
       return (
-        <div ref={flagMenu} id="flag-menu" className={`overflow-hidden ${styles['dropdown-menu']} w-20 flex flex-col absolute text-white ${styles['chat-flag-action-dropdown']} ${isFlagging ? 'block' : 'hidden'}`}>
+        <div ref={flagMenu} id="flag-menu" className={`overflow-hidden ${styles['dropdown-menu']} w-20 flex flex-col absolute text-white ${!props.isLastItem ? styles['chat-flag-action-dropdown'] : styles['chat-flag-action-dropdown-end-item']} ${isFlagging ? 'block' : 'hidden'}`}>
           <ul className="text-xs text-center">
             <button><li className={``}>Report User</li></button>
           </ul>
@@ -249,11 +254,11 @@ export default function Home() {
       )
     }
 
-    function ReactionMenu() {
+    function ReactionMenu(props: { isLastItem: boolean }) {
       const emojis: string[] = ['😊', '😔', '👍', '❤️', '😠', '👎', '👏']
 
       return (
-        <div ref={reactionMenu} id="reaction-menu" className={`${styles['dropdown-menu']} justify-center  flex flex-row absolute text-white ${styles['chat-reactions-dropdown-items']} ${isReacting ? 'block' : 'hidden'}`}>
+        <div ref={reactionMenu} id="reaction-menu" className={`${styles['dropdown-menu']} justify-center  flex flex-row absolute text-white ${!props.isLastItem ?  styles['chat-reactions-dropdown-items'] : styles['chat-reactions-dropdown-items-end-item']} ${isReacting ? 'block' : 'hidden'}`}>
           <ul className="text-md flex flex-row overflow-hidden">
             {
               emojis.map((emoji, index) => (
@@ -269,6 +274,5 @@ export default function Home() {
   }
 
 }
-
 
 

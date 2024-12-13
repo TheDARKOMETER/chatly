@@ -36,13 +36,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
             setUser(pb.authStore.model)
             return { success: true, message: "You have successfully logged in" }
         } catch(error: unknown) {
-            const validationError = error as ValidationErrors
             let errorMessage = 'Error signing up'
-            console.error(error)
-            // if (Object.values(validationError.response.data)[0].message) {
-            //     errorMessage = Object.values(validationError.response.data)[0].message
-            // }
-            // console.log(errorMessage)
             return { success: false, message: `${errorMessage}` }
         }
     }

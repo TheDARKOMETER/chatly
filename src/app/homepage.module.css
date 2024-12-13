@@ -3,14 +3,18 @@
     width: 92rem;
 }
 
-
-
 .chat-flag-action-dropdown {
     position: absolute;
     top: 75%;
     left: 50%;
     transform: translate(-50%, 30%);
-    z-index: 9999;
+}
+
+.chat-flag-action-dropdown-end-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -20%);
 }
 
 .chat-action-dropdown-items {
@@ -27,7 +31,16 @@
     z-index: 10;
 }
 
+.chat-reactions-dropdown-items-end-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-80%, -20%);
+    z-index: 10;
+}
+
 .dropdown-menu {
+    z-index: 9999;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
     border-color: rgb(71 85 105);
