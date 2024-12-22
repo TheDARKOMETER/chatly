@@ -22,6 +22,7 @@ export interface User {
     avatarUrl: string;
     username: string;
     email: string;
+    created: Date;
   }
 
 export interface ChatMessage {
@@ -29,7 +30,7 @@ export interface ChatMessage {
     username: string;
     avatarUrl?: string;
     reactions: string[];
-    author: User;
+    author: AuthModel;
     timestamp: number;
     uuid: string;
   }

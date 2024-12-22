@@ -1,7 +1,7 @@
 'use client'
 import React, { createContext, SetStateAction, useEffect, useState } from 'react'
 import { AuthResponse, ValidationErrors, AuthContextType } from './types.tsx'
-import PocketBase, { AuthModel } from "pocketbase"
+import PocketBase, { AuthModel, RecordModel } from "pocketbase"
 import Client from 'pocketbase'
 const AuthContext = createContext<AuthContextType | null>(null)
 
@@ -19,6 +19,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
         console.log(pb.authStore)
         console.log(pb.authStore.isValid);
         console.log(pb.authStore.token);
+        console.log(pb.authStore)
     }, [pb.authStore])
 
     useEffect(() => {
@@ -75,12 +76,17 @@ export default function authcontext(props: { children: React.ReactNode }) {
         }
     }
 
+    async function getAvatarUrl(record: RecordModel, avatar: string): Promise<string> {
+        return await pb.files.getUrl(record, avatar, {'thumb': '100x100'})
+    }
+
     const values = {
         pb,
         login,
         signup,
         user,
-        logout
+        logout,
+        getAvatarUrl
     }
 
 

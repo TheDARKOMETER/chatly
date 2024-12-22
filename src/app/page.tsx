@@ -18,14 +18,14 @@ export default function Home() {
   const [transport, setTransport] = useState("N/A")
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const authContext = useAuth()
-  const { user } = authContext
+  const { user, getAvatarUrl } = authContext
   const endOfChatRef = useRef<HTMLDivElement>(null)
-  const chatboxRef = useRef<HTMLDivElement>(null)
   const [author, setAuthor] = useState<User>({
     id: '',
     avatarUrl: "",
     username: "",
     email: "t3gQx@example.com",
+    created: new Date(),
   })
 
 
@@ -49,7 +49,6 @@ export default function Home() {
       if (chatInputRef.current) {
         chatInputRef.current.value = ""
       }
-      console.log("The chatMessage state has been set", currentInputMessage)
       socket.emit('sendMessage', currentInputMessage)
       setCurrentInputMessage(null)
     }
@@ -57,6 +56,7 @@ export default function Home() {
 
 
   useEffect(() => {
+    console.log(process.env.NEXT_PUBLIC_POCKETBASE_AVATAR_URL)
     if (socket.connected) {
       onConnect()
     }
@@ -91,6 +91,7 @@ export default function Home() {
           avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
           username: socket.id as string,
           email: socket.id as string,
+          created: new Date(),
         })
       } else {
         setAuthor({
@@ -98,6 +99,7 @@ export default function Home() {
           avatarUrl: user.avatar,
           username: user.username as string,
           email: user.email,
+          created: new Date(),
         })
       }
 
@@ -164,6 +166,10 @@ export default function Home() {
           <textarea ref={chatInputRef} onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault()
+              if (chatInputRef.current?.value === "" && chatInputRef.current) {
+                chatInputRef.current.placeholder = "Message must be more than 1 character long"
+                return
+              }
               emitMessage()
             }
           }
@@ -181,6 +187,7 @@ export default function Home() {
   function ChatMessage(props: ChatMessage & { isLastItem: boolean }): JSX.Element {
     const [isReacting, setIsReacting] = useState(false)
     const [isFlagging, setIsFlagging] = useState(false)
+    const [avatarUrl, setAvatarUrl] = useState('')
     const reactionButton = useRef<HTMLButtonElement>(null)
     const reactionMenu = useRef<HTMLDivElement>(null)
     const flagButton = useRef<HTMLButtonElement>(null)
@@ -217,11 +224,24 @@ export default function Home() {
       return () => document.body.removeEventListener('click', dismissDropdownOnClickOutside)
     })
 
+    useEffect(() => {
+      async function fetchAvatar() {
+        const url = await getAvatarUrl(props.author, props.author?.avatar)
+        setAvatarUrl(url)
+      }
+      fetchAvatar()
+    }, [props.author])
+
+    console.log(props.author)
+
     return (
       <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
-            <Avatar className="size-6" alt={props.username} src={props.avatarUrl} />{props.username}
+            {( (props.author?.avatar === "") ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
+            : <img src={avatarUrl} className="w-8 h-8 rounded-full" />
+            )}
+            <span className="font-bold">{props.username}</span>
           </span>{props.message}
         </div>
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
@@ -258,7 +278,7 @@ export default function Home() {
       const emojis: string[] = ['😊', '😔', '👍', '❤️', '😠', '👎', '👏']
 
       return (
-        <div ref={reactionMenu} id="reaction-menu" className={`${styles['dropdown-menu']} justify-center  flex flex-row absolute text-white ${!props.isLastItem ?  styles['chat-reactions-dropdown-items'] : styles['chat-reactions-dropdown-items-end-item']} ${isReacting ? 'block' : 'hidden'}`}>
+        <div ref={reactionMenu} id="reaction-menu" className={`${styles['dropdown-menu']} justify-center  flex flex-row absolute text-white ${!props.isLastItem ? styles['chat-reactions-dropdown-items'] : styles['chat-reactions-dropdown-items-end-item']} ${isReacting ? 'block' : 'hidden'}`}>
           <ul className="text-md flex flex-row overflow-hidden">
             {
               emojis.map((emoji, index) => (
