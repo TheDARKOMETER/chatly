@@ -13,7 +13,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
 
 
     const pb: Client = new PocketBase("http://127.0.0.1:8090")
-    const [user, setUser]: [ AuthModel | null, React.Dispatch<SetStateAction<AuthModel | null>>] = useState(pb.authStore.model)
+    const [user, setUser]: [AuthModel | null, React.Dispatch<SetStateAction<AuthModel | null>>] = useState(pb.authStore.model)
 
     useEffect(() => {
         console.log(pb.authStore)
@@ -23,7 +23,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
     }, [pb.authStore])
 
     useEffect(() => {
-        if (user){
+        if (user) {
             console.log(user)
         }
 
@@ -36,7 +36,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
             console.log(authData)
             setUser(pb.authStore.model)
             return { success: true, message: "You have successfully logged in" }
-        } catch(error: unknown) {
+        } catch (error: unknown) {
             let errorMessage = 'Error signing up'
             return { success: false, message: `${errorMessage}` }
         }
@@ -77,7 +77,11 @@ export default function authcontext(props: { children: React.ReactNode }) {
     }
 
     async function getAvatarUrl(record: RecordModel, avatar: string): Promise<string> {
-        return await pb.files.getUrl(record, avatar, {'thumb': '100x100'})
+        return await pb.files.getUrl(record, avatar, { 'thumb': '100x100' })
+    }
+
+    async function updateAvatar(id: string, file: File): Promise<string> {
+        return await pb.collection('users').update(id, { avatar: file })
     }
 
     const values = {
@@ -86,7 +90,8 @@ export default function authcontext(props: { children: React.ReactNode }) {
         signup,
         user,
         logout,
-        getAvatarUrl
+        getAvatarUrl,
+        updateAvatar
     }
 
 

@@ -11,6 +11,8 @@ export interface AuthContextType {
     signup: (user: FormData) => Promise<AuthResponse>;
     user: AuthModel | null;
     logout: () => Promise<AuthResponse>;
+    getAvatarUrl: (record: RecordService, avatar: string) => Promise<string>;
+    updateAvatar: (id: string, file: File) => Promise<string>;
 }
 
 export interface ValidationErrors {

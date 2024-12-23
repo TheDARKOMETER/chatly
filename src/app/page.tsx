@@ -238,7 +238,7 @@ export default function Home() {
       <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
-            {( (props.author?.avatar === "") ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
+            {( (props.author?.avatar === "" || !props.author) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
             : <img src={avatarUrl} className="w-8 h-8 rounded-full" />
             )}
             <span className="font-bold">{props.username}</span>
