@@ -93,15 +93,8 @@ export default function Home() {
           email: socket.id as string,
           created: new Date(),
         })
-      } else {
-        setAuthor({
-          id: user.id as string,
-          avatarUrl: user.avatar,
-          username: user.username as string,
-          email: user.email,
-          created: new Date(),
-        })
       }
+      
 
     }
 
@@ -230,13 +223,11 @@ export default function Home() {
 
     // authContext?.getAvatarUrl(props.author, props.uuid).then((url) => setAvatarUrl(url))
 
-    console.log(props)
-
     return (
       <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
-            {((props.author!.avatarUrl === "" || !props.author) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
+            {((props.author?.avatarUrl === null || !props.author) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
               : <img src={props.author!.avatarUrl} className="w-8 h-8 rounded-full" />
             )}
             <span className="font-bold">{props.username}</span>

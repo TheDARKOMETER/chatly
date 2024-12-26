@@ -15,7 +15,6 @@ export default function page() {
     const [transport, setTransport] = useState("N/A");
     const [hydrated, setIsHydrated] = useState(false)
     const [imageFile, setImageFile] = useState<File>()
-    const [avatarUrl, setAvatarUrl] = useState('')
     const [showModal, setShowModal] = useState(false)
     useEffect(() => {
         if (authContext) {
