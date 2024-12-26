@@ -30,6 +30,17 @@ app.prepare().then(() => {
             io.emit("receiveMessage", chatMessage)
             console.log(chatMessagesHistory)
         })
+
+        socket.on("updateUserAvatar", (newUser) => {
+            if (chatMessagesHistory) {
+                chatMessagesHistory = chatMessagesHistory.map((chatMessage) => {
+                    if (chatMessage.author.id === newUser.id) {
+                        return {...chatMessage, author: newUser}
+                    }
+                    return chatMessage
+                })
+            }
+        })
     })
 
 

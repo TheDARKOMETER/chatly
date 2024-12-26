@@ -18,7 +18,7 @@ export default function Home() {
   const [transport, setTransport] = useState("N/A")
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const authContext = useAuth()
-  const { user, getAvatarUrl } = authContext
+  const { user, getAvatarUrl } = authContext!
   const endOfChatRef = useRef<HTMLDivElement>(null)
   const [author, setAuthor] = useState<User>({
     id: '',
@@ -224,22 +224,20 @@ export default function Home() {
       return () => document.body.removeEventListener('click', dismissDropdownOnClickOutside)
     })
 
-    useEffect(() => {
-      async function fetchAvatar() {
-        const url = await getAvatarUrl(props.author, props.author?.avatar)
-        setAvatarUrl(url)
-      }
-      fetchAvatar()
-    }, [props.author])
+    // authContext?.getUserRecord(props.author!.id, props.uuid).then((user) => {
+    //   authContext.getAvatarUrl(user!, props.author!.avatarUrl, props.uuid).then((url) => setAvatarUrl(url))
+    // })
 
-    console.log(props.author)
+    // authContext?.getAvatarUrl(props.author, props.uuid).then((url) => setAvatarUrl(url))
+
+    console.log(props)
 
     return (
       <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
-            {( (props.author?.avatar === "" || !props.author) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
-            : <img src={avatarUrl} className="w-8 h-8 rounded-full" />
+            {((props.author!.avatarUrl === "" || !props.author) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
+              : <img src={props.author!.avatarUrl} className="w-8 h-8 rounded-full" />
             )}
             <span className="font-bold">{props.username}</span>
           </span>{props.message}

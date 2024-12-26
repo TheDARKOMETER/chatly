@@ -25,8 +25,18 @@ export default function authcontext(props: { children: React.ReactNode }) {
     useEffect(() => {
         if (user) {
             console.log(user)
+            const updateAvatarUrl = async () => {
+                const formattedUser = await getUserRecord(user.id, null)
+                setUser(formattedUser)
+            }
+            updateAvatarUrl()
         }
+    }, [])
 
+    useEffect(() => {
+        if (user) {
+            console.log(user)
+        }
     }, [user])
 
 
@@ -76,13 +86,31 @@ export default function authcontext(props: { children: React.ReactNode }) {
         }
     }
 
-    async function getAvatarUrl(record: RecordModel, avatar: string): Promise<string> {
-        return await pb.files.getUrl(record, avatar, { 'thumb': '100x100' })
+    async function getAvatarUrl(record: RecordModel | AuthModel, key: string | null): Promise<string> {
+        const authorFromId = await pb.collection('users').getOne(record!.id, { requestKey: key })
+        return await pb.files.getUrl(authorFromId, authorFromId.avatar, { 'thumb': '100x100' })
     }
 
-    async function updateAvatar(id: string, file: File): Promise<string> {
-        return await pb.collection('users').update(id, { avatar: file })
+    async function updateAvatar(id: string, file: File): Promise<boolean> {
+        try {
+            const updatedUser =  await pb.collection('users').update(id, { avatar: file })
+            const formattedUser = await getUserRecord(updatedUser.id, null)
+            setUser(formattedUser)
+            return !!updatedUser
+        } catch (e: unknown) {
+            return false
+        }
+
     }
+
+    async function getUserRecord(id: string, key: string | null): Promise<RecordModel> {
+        const userRecord = await pb.collection('users').getOne(id, { requestKey: key })
+        const fetchAvatarUrl = await getAvatarUrl(userRecord, null)
+        const formattedUserRecord = {...userRecord, avatarUrl: fetchAvatarUrl}
+        return formattedUserRecord
+    }
+
+
 
     const values = {
         pb,
@@ -91,7 +119,8 @@ export default function authcontext(props: { children: React.ReactNode }) {
         user,
         logout,
         getAvatarUrl,
-        updateAvatar
+        updateAvatar,
+        getUserRecord
     }
 
 
