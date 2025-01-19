@@ -35,7 +35,7 @@ export default function Home() {
   const emitMessage = (): void => {
     setCurrentInputMessage({
       message: chatInputRef.current?.value as string,
-      username: author.username,
+      guestName: author.username,
       reactions: [],
       author: user,
       timestamp: Date.now(),
@@ -135,7 +135,7 @@ export default function Home() {
 
           return (<ChatMessage key={message.uuid}
             message={message.message}
-            username={message.username}
+            guestName={message.guestName}
             author={message.author}
             reactions={message.reactions}
             timestamp={message.timestamp}
@@ -227,10 +227,10 @@ export default function Home() {
       <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
           <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
-            {((props.author?.avatarUrl === null || !props.author?.avatarUrl) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.username} />
+            {((props.author?.avatarUrl === null || !props.author?.avatarUrl) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.guestName} />
               : <img src={props.author!.avatarUrl} className="w-8 h-8 rounded-full" />
             )}
-            <span className="font-bold">{props.author?.username || props.username}</span>
+            <span className="font-bold">{props.author?.username || props.guestName}</span>
           </span>{props.message}
         </div>
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">

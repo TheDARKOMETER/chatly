@@ -25,17 +25,11 @@ export default function authcontext(props: { children: React.ReactNode }) {
     useEffect(() => {
         if (user) {
             console.log(user)
-            const updateAvatarUrl = async () => {
+            const formatUser = async () => {
                 const formattedUser = await getUserRecord(user.id, null)
                 setUser(formattedUser)
             }
-            updateAvatarUrl()
-        }
-    }, [])
-
-    useEffect(() => {
-        if (user) {
-            console.log(user)
+            formatUser()
         }
     }, [user])
 

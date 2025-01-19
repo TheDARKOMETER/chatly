@@ -30,7 +30,7 @@ export interface User {
 
 export interface ChatMessage {
   message: string;
-  username: string;
+  guestName: string;
   avatarUrl?: string;
   reactions: string[];
   author: AuthModel;
