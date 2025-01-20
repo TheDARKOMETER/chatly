@@ -1,6 +1,6 @@
 'use server'
 import PocketBase from 'pocketbase';
-import { ChatMessage, User } from './page';
+import { ChatMessage } from "@/app/types";
 
 const pb: PocketBase = new PocketBase('http://127.0.0.1:8090');
 

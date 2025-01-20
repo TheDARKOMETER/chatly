@@ -1,3 +1,4 @@
+import { Url } from "next/dist/shared/lib/router/router";
 import Client, { AuthModel, RecordModel } from "pocketbase";
 export interface ValidationError {
   data(data: any): unknown;
@@ -31,10 +32,10 @@ export interface User {
 export interface ChatMessage {
   message: string;
   guestName: string;
-  avatarUrl?: string;
-  reactions: string[];
+  avatarUrl?: Url;
+  reactions: AuthModel[];
   author: AuthModel;
-  timestamp: number;
+  timestamp: Date;
   uuid: string;
 }
 

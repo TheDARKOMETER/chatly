@@ -26,7 +26,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
         if (user) {
             console.log(user)
             const formatUser = async () => {
-                const formattedUser = await getUserRecord(user.id, null)
+                const formattedUser = await getFormattedUserRecord(user.id, null)
                 setUser(formattedUser)
             }
             formatUser()
@@ -88,7 +88,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
     async function updateAvatar(id: string, file: File): Promise<boolean> {
         try {
             const updatedUser =  await pb.collection('users').update(id, { avatar: file })
-            const formattedUser = await getUserRecord(updatedUser.id, null)
+            const formattedUser = await getFormattedUserRecord(updatedUser.id, null)
             setUser(formattedUser)
             return !!updatedUser
         } catch (e: unknown) {
@@ -97,7 +97,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
 
     }
 
-    async function getUserRecord(id: string, key: string | null): Promise<RecordModel> {
+    async function getFormattedUserRecord(id: string, key: string | null): Promise<RecordModel> {
         const userRecord = await pb.collection('users').getOne(id, { requestKey: key })
         const fetchAvatarUrl = await getAvatarUrl(userRecord, null)
         const formattedUserRecord = {...userRecord, avatarUrl: fetchAvatarUrl}
@@ -114,7 +114,7 @@ export default function authcontext(props: { children: React.ReactNode }) {
         logout,
         getAvatarUrl,
         updateAvatar,
-        getUserRecord
+        getUserRecord: getFormattedUserRecord
     }
 
 

@@ -38,7 +38,7 @@ export default function Home() {
       guestName: author.username,
       reactions: [],
       author: user,
-      timestamp: Date.now(),
+      timestamp: new Date(Date.now()),
       uuid: uuid(),
     })
   }

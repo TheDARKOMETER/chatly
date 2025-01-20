@@ -2,6 +2,12 @@ import { createServer } from "http";
 import { parse } from 'url'
 import next from 'next'
 import { Server } from 'socket.io'
+import PocketBase from 'pocketbase';
+
+
+const pb = new PocketBase('http://127.0.0.1:8090');
+
+
 
 const port = parseInt(process.env.PORT || '3012', 10)
 const dev = process.env.NODE_ENV !== 'production'
@@ -28,6 +34,15 @@ app.prepare().then(() => {
         socket.on("sendMessage", (chatMessage) => {
             console.log(chatMessage)
             chatMessagesHistory.push(chatMessage)
+            pb.collection('chat_messages').create({
+                message: chatMessage.message,
+                guestName: chatMessage.guestName,
+                reactions: chatMessage.reactions,
+                avatarUrl: chatMessage.author.avatarUrl,
+                author: chatMessage.author.id,
+                timestamp: chatMessage.timestamp,
+                uuid: chatMessage.uuid
+            })
             io.emit("receiveMessage", chatMessage)
             console.log(chatMessagesHistory)
         })
