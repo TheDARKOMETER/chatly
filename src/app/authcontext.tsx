@@ -24,14 +24,13 @@ export default function authcontext(props: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (user) {
-            console.log(user)
             const formatUser = async () => {
                 const formattedUser = await getFormattedUserRecord(user.id, null)
                 setUser(formattedUser)
             }
             formatUser()
         }
-    }, [user])
+    }, [])
 
 
     async function login(input: FormData): Promise<AuthResponse> {

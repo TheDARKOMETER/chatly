@@ -94,7 +94,7 @@ export default function Home() {
           created: new Date(),
         })
       }
-      
+
 
     }
 
@@ -217,21 +217,24 @@ export default function Home() {
       return () => document.body.removeEventListener('click', dismissDropdownOnClickOutside)
     })
 
-    // authContext?.getUserRecord(props.author!.id, props.uuid).then((user) => {
-    //   authContext.getAvatarUrl(user!, props.author!.avatarUrl, props.uuid).then((url) => setAvatarUrl(url))
-    // })
+    const parent: HTMLElement | null = document.getElementById('chat-messager-container')
+    const child: HTMLElement | null  = document.getElementById('text-wrapper')
 
-    // authContext?.getAvatarUrl(props.author, props.uuid).then((url) => setAvatarUrl(url))
-    console.log(props.author)
+    if (parent?.offsetWidth < child?.offsetWidth) {
+      console.log("text too long", parent?.offsetWidth, child?.offsetWidth) 
+    } 
     return (
-      <div className="chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
+      <div id="chat-messager-container" className="w-full chat-message flex flex-row justify-between items-center bg-slate-900 p-2">
         <div className="flex flex-row items-center">
-          <span className="flex items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
+          <span className="flex h-16 items-center gap-x-1 px-3 py-1 rounded-xl mr-2">
             {((props.author?.avatarUrl === null || !props.author?.avatarUrl) ? <Avatar sx={{ width: 32, height: 32 }} alt={props.guestName} />
               : <img src={props.author!.avatarUrl} className="w-8 h-8 rounded-full" />
             )}
             <span className="font-bold">{props.author?.username || props.guestName}</span>
-          </span>{props.message}
+          </span>
+          <div id="text-wrapper" className="text-wrap">
+            {props.message}
+          </div>
         </div>
         <div className="text-slate-600 text-sm mr-2 gap-x-2 flex">
 
