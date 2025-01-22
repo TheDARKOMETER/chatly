@@ -24,36 +24,36 @@ export default function page() {
 
     useEffect(() => {
         if (socket.connected) {
-          onConnect();
+            onConnect();
         }
-    
+
         function onConnect() {
-          setIsConnected(true);
-          setTransport(socket.io.engine.transport.name);
-    
-          socket.io.engine.on("upgrade", (transport) => {
-            setTransport(transport.name);
-          });
+            setIsConnected(true);
+            setTransport(socket.io.engine.transport.name);
+
+            socket.io.engine.on("upgrade", (transport) => {
+                setTransport(transport.name);
+            });
         }
-    
+
         function onDisconnect() {
-          setIsConnected(false);
-          setTransport("N/A");
+            setIsConnected(false);
+            setTransport("N/A");
         }
-    
+
         socket.on("connect", onConnect);
         socket.on("disconnect", onDisconnect);
-    
-        return () => {
-          socket.off("connect", onConnect);
-          socket.off("disconnect", onDisconnect);
-        };
-      }, []);
-    
 
-      useEffect(() => {
+        return () => {
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
+        };
+    }, []);
+
+
+    useEffect(() => {
         console.log(transport)
-      }, [transport])
+    }, [transport])
 
 
     if (hydrated) {
@@ -79,21 +79,30 @@ export default function page() {
 
         return (
             <>
-                <div className={`flex gap-y-3 text-white flex-col bg-slate-900 border p-8 border-slate-500 rounded-md w-full h-128`} >
-                    <h1 className="text-white text-2xl font-bold">Your profile:</h1>
-                    <p>Profile picture: {((user!.avatarUrl === "") ? <Avatar sx={{ width: 64, height: 64 }} alt={username} />
-                        : <img src={user!.avatarUrl} className="w-32 h-32 rounded-full" />
-                    )}</p>
-                    <p>Username: {username}</p>
-                    <p>Email: {email}</p>
-                    <p>Joined: {new Date(created!).toLocaleDateString()}</p>
-                    <div className="flex flex-col gap-y-3">
-                        <label>Choose a profile picture: </label>
-                        {imageFile && <img src={imageFile ? URL.createObjectURL(imageFile) : ""} className="w-32 h-32" />}
-                        <input accept="image/*" onChange={(e) => setImageFile(e.target.files![0])} type="file" />
-                        <button type="submit" className="text-center border border-slate-500 w-20 rounded" onClick={handleSubmit} >Submit</button>
+                <div className="flex flex-row w-full  text-white bg-slate-900 border p-8 border-slate-500 rounded-md h-128">
+                    <div className={`w-1/2 flex-col gap-y-3 flex`} >
+                        <h1 className="text-white text-2xl font-bold">Your profile:</h1>
+                        <p>
+                            Profile picture:
+                        </p>
+                        {((user!.avatarUrl === "") ? <Avatar sx={{ width: 64, height: 64 }} alt={username} />
+                            : <img src={user!.avatarUrl} className="w-32 h-32 rounded-full" />
+                        )}
+                        <p>Username: {username}</p>
+                        <p>Email: {email}</p>
+                        <p>Joined: {new Date(created!).toLocaleDateString()}</p>
+                        <div className="flex flex-col gap-y-3">
+                            <label>Choose a profile picture: </label>
+                            {imageFile && <img src={imageFile ? URL.createObjectURL(imageFile) : ""} className="w-32 h-32" />}
+                            <input accept="image/*" onChange={(e) => setImageFile(e.target.files![0])} type="file" />
+                            <button type="submit" className="text-center border border-slate-500 w-20 rounded" onClick={handleSubmit} >Submit</button>
+                        </div>
+                    </div>
+                    <div className="w-1/2">
+                    <h1 className="text-white text-2xl font-bold">Your stats:</h1>
                     </div>
                 </div>
+
                 {showModal && <LoginModal message="Profile Updated" isSuccess={true} toggleModal={setShowModal} />}
 
             </>
