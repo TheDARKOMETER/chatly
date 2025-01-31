@@ -3,9 +3,32 @@ import { parse } from 'url'
 import next from 'next'
 import { Server } from 'socket.io'
 import PocketBase from 'pocketbase';
+import dotenv from 'dotenv';
+import rlsync from 'readline-sync'
 
-
+dotenv.config()
 const pb = new PocketBase('http://127.0.0.1:8090');
+
+console.log(process.env.NODE_ENV)
+if (process.env.NODE_ENV == 'production') {
+    let password = rlsync.question('Password: ', { hideEchoBack: true })
+    try {
+        await pb.admins.authWithPassword(process.env.ADMIN_EMAIL, password)
+    } catch (e) {
+        console.error(e)
+        process.exit(1)
+    }
+
+} else {
+
+    try {
+        await pb.admins.authWithPassword(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD)
+    } catch (e) {
+        console.error(e)
+        process.exit(1)
+    }
+
+}
 
 
 
@@ -51,7 +74,7 @@ app.prepare().then(() => {
             if (chatMessagesHistory) {
                 chatMessagesHistory = chatMessagesHistory.map((chatMessage) => {
                     if (chatMessage.author.id === newUser.id) {
-                        return {...chatMessage, author: newUser}
+                        return { ...chatMessage, author: newUser }
                     }
                     return chatMessage
                 })
